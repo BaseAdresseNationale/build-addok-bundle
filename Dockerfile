@@ -17,6 +17,9 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y redis-tools zip unzip
 
+# Création de l'utilisateur et groupe avec UID/GID 1000
+RUN groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -s /bin/sh -m appuser
+
 COPY --from=redis /usr/local/bin/redis-server /usr/local/bin/redis-server
 COPY --from=build /root/.local /root/.local
 
@@ -29,8 +32,11 @@ RUN chmod +x /usr/local/bin/build-addok-bundle.sh
 COPY config config
 ENV ADDOK_CONFIG_MODULE=config/addok.conf
 
-RUN mkdir -p data dist
+RUN mkdir -p data dist && chown -R appuser:appgroup data dist
 
 ENV PATH=/root/.local/bin:$PATH
+
+# Passer en utilisateur non-root
+USER appuser
 
 CMD ["start.sh"]
