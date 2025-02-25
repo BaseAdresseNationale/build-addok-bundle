@@ -30,15 +30,9 @@ addok ngrams
 echo "Saving Redis database..."
 redis-cli save || { echo "Error: Redis save failed"; exit 1; }
 
-# Verify files exist before zipping
-if [[ ! -f dist/addok.db ]] || [[ ! -f dump.rdb ]]; then
-  echo "Error: Required files for zip missing (dist/addok.db or dump.rdb)"
-  exit 1
-fi
-
 # Zip and upload addok bundle to S3
 echo "Uploading addok bundle to s3..."
-zip -j "$LOCAL_OUTPUT_FILE_PATH" dist/addok.db dump.rdb "$ADDOK_CONFIG_MODULE" || { echo "Error: zip failed"; exit 1; }
+zip -j "$LOCAL_OUTPUT_FILE_PATH" dist/addok.db dist/dump.rdb "$ADDOK_CONFIG_MODULE" || { echo "Error: zip failed"; exit 1; }
 aws --endpoint-url $S3_ENDPOINT_URL s3 cp "$LOCAL_OUTPUT_FILE_PATH" s3://$S3_BUCKET/$S3_OUTPUT_FILE_PATH || { echo "Error: S3 upload failed"; exit 1; }
 
 echo "Addok bundle uploaded to S3."
